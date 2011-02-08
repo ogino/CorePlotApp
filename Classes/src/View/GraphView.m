@@ -35,8 +35,9 @@
 - (void)createDrawArea:(BOOL)allowsUserInteraction {
 	CPXYPlotSpace *plotSpace = (CPXYPlotSpace *)self.graph.defaultPlotSpace;
 	plotSpace.allowsUserInteraction = allowsUserInteraction;
-	plotSpace.xRange = [CPPlotRange plotRangeWithLocation:CPDecimalFromFloat(-2.5) length:CPDecimalFromFloat(12.0)];
-	plotSpace.yRange = [CPPlotRange plotRangeWithLocation:CPDecimalFromFloat(-55) length:CPDecimalFromFloat(365.0)];
+	// Set Display Range.
+	plotSpace.xRange = [CPPlotRange plotRangeWithLocation:CPDecimalFromFloat(-2.0) length:CPDecimalFromFloat(24.0)];
+	plotSpace.yRange = [CPPlotRange plotRangeWithLocation:CPDecimalFromFloat(-15.0) length:CPDecimalFromFloat(30.0)];
 }
 
 - (CPTextStyle*)createTextStyle:(NSString*)fontName color:(CPColor*)color {
@@ -58,21 +59,21 @@
 	return xFormatter;
 }
 
-#define MIN_XAXIS -100.0
-#define MAX_XAXIS 100.0
+#define MIN_XAXIS 0.0
+#define MAX_XAXIS 20.0
 #define XAXIS_LENGTH (MAX_XAXIS - MIN_XAXIS)
 
 - (void)createXAxis:(CPXYAxisSet*)axisSet {
 	CPXYAxis *xAxis = axisSet.xAxis;
 	xAxis.majorIntervalLength = CPDecimalFromString(@"1");
 	xAxis.orthogonalCoordinateDecimal = CPDecimalFromString(@"0");
-	xAxis.minorTicksPerInterval = 0;
+	xAxis.minorTicksPerInterval = 0.0f;
 
-	[xAxis setTitle:@"X Jump"];
+	[xAxis setTitle:@"X Axis"];
 	[xAxis setVisibleRange:[CPPlotRange plotRangeWithLocation:CPDecimalFromFloat(MIN_XAXIS) length:CPDecimalFromFloat(XAXIS_LENGTH)]];
 
 	[xAxis setLabelTextStyle:[self createTextStyle:@"Georgia" color:[CPColor cyanColor]]];
-	[xAxis setTitleTextStyle:[self createTextStyle:@"Georgia" color:[CPColor yellowColor] size:16.0f]];
+	[xAxis setTitleTextStyle:[self createTextStyle:@"Georgia" color:[CPColor yellowColor] size:12.0f]];
 
 	xAxis.labelFormatter = [self createXFormatter];
 }
@@ -83,21 +84,21 @@
 	return yFormatter;
 }
 
-#define MIN_YAXIS -500.0
-#define MAX_YAXIS 500.0
+#define MIN_YAXIS -10.0
+#define MAX_YAXIS 10.0
 #define YAXIS_LENGTH (MAX_YAXIS - MIN_YAXIS)
 
 - (void)createYAxis:(CPXYAxisSet*)axisSet {
 	CPXYAxis *yAxis = axisSet.yAxis;
-	yAxis.majorIntervalLength = CPDecimalFromString(@"50");
-	yAxis.minorTicksPerInterval = 1;
+	yAxis.majorIntervalLength = CPDecimalFromString(@"1");
+	yAxis.minorTicksPerInterval = 0;
 	yAxis.orthogonalCoordinateDecimal = CPDecimalFromString(@"0");
 
-	[yAxis setTitle:@"Score"];
+	[yAxis setTitle:@"Y Axis"];
 	[yAxis setVisibleRange:[CPPlotRange plotRangeWithLocation:CPDecimalFromFloat(MIN_YAXIS) length:CPDecimalFromFloat(YAXIS_LENGTH)]];
 
 	[yAxis setLabelTextStyle:[self createTextStyle:@"Georgia" color:[CPColor cyanColor]]];
-	[yAxis setTitleTextStyle:[self createTextStyle:@"Georgia" color:[CPColor yellowColor] size:16.0f]];
+	[yAxis setTitleTextStyle:[self createTextStyle:@"Georgia" color:[CPColor yellowColor] size:12.0f]];
 
 	yAxis.labelFormatter = [self createYFormatter];
 
@@ -113,7 +114,7 @@
 	CPScatterPlot *scorePlot = [[[CPScatterPlot alloc] init] autorelease];
 	scorePlot.identifier = @"Score Plot";
 	scorePlot.dataLineStyle.miterLimit = 1.0f;
-	scorePlot.dataLineStyle.lineWidth = 3.0f;
+	scorePlot.dataLineStyle.lineWidth = 1.0f;
 	scorePlot.dataLineStyle.lineColor = [CPColor blueColor];
 	scorePlot.dataSource = self;
 	return scorePlot;
@@ -149,13 +150,13 @@
 	return fadeInAnimation;
 }
 
-#define ARRAY_CAPACITY 200
+#define ARRAY_CAPACITY XAXIS_LENGTH
 
 - (void)createPlots {
 	NSMutableArray *contents = [NSMutableArray arrayWithCapacity:ARRAY_CAPACITY];
-	for (NSInteger i = -100; i < 100; i++) {
+	for (NSInteger i = MIN_XAXIS; i < MAX_XAXIS; i++) {
 		id x = [NSNumber numberWithFloat:i];
-		id y = [NSNumber numberWithInt:-(i * i)];
+		id y = [NSNumber numberWithInt:(i % 10)];
 		[contents addObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:x, @"x", y, @"y", nil]];
 	}
 	self.plots = contents;
