@@ -18,11 +18,13 @@
 #pragma mark -
 #pragma mark Private Methods
 
+#define NO_PADDING 0.0
+
 - (void)initPadding {
-	self.graph.paddingLeft = 0.0;
-	self.graph.paddingTop = 0.0;
-	self.graph.paddingRight = 0.0;
-	self.graph.paddingBottom = 0.0;
+	self.graph.paddingLeft = NO_PADDING;
+	self.graph.paddingTop = NO_PADDING;
+	self.graph.paddingRight = NO_PADDING;
+	self.graph.paddingBottom = NO_PADDING;
 }
 
 - (void)createGraph {
@@ -32,12 +34,24 @@
 	[self initPadding];
 }
 
+#define MIN_XAXIS -360.0
+#define MAX_XAXIS 360.0
+#define XAXIS_LENGTH (MAX_XAXIS - MIN_XAXIS)
+#define XAXIS_PADDING (MAX_XAXIS / 10)
+#define XAXIS_DISP_LENGTH (XAXIS_LENGTH + 2*XAXIS_PADDING)
+
+#define MIN_YAXIS -1.0
+#define MAX_YAXIS 1.0
+#define YAXIS_LENGTH (MAX_YAXIS - MIN_YAXIS)
+#define YAXIS_PADDING (MAX_YAXIS / 10)
+#define YAXIS_DISP_LENGTH (YAXIS_LENGTH + 2*YAXIS_PADDING)
+
 - (void)createDrawArea:(BOOL)allowsUserInteraction {
 	CPXYPlotSpace *plotSpace = (CPXYPlotSpace *)self.graph.defaultPlotSpace;
 	plotSpace.allowsUserInteraction = allowsUserInteraction;
 	// Set Display Range.
-	plotSpace.xRange = [CPPlotRange plotRangeWithLocation:CPDecimalFromFloat(-2.0) length:CPDecimalFromFloat(24.0)];
-	plotSpace.yRange = [CPPlotRange plotRangeWithLocation:CPDecimalFromFloat(-15.0) length:CPDecimalFromFloat(30.0)];
+	plotSpace.xRange = [CPPlotRange plotRangeWithLocation:CPDecimalFromFloat(MIN_XAXIS - XAXIS_PADDING) length:CPDecimalFromFloat(XAXIS_DISP_LENGTH)];
+	plotSpace.yRange = [CPPlotRange plotRangeWithLocation:CPDecimalFromFloat(MIN_YAXIS - YAXIS_PADDING) length:CPDecimalFromFloat(YAXIS_DISP_LENGTH)];
 }
 
 - (CPTextStyle*)createTextStyle:(NSString*)fontName color:(CPColor*)color {
@@ -53,23 +67,24 @@
 	return textStyleX;
 }
 
+#define ZERO_DEGIT 0
+
 - (NSNumberFormatter*)createXFormatter {
 	NSNumberFormatter* xFormatter = [[[NSNumberFormatter alloc] init] autorelease];
-	[xFormatter setMaximumFractionDigits:0];
+	[xFormatter setMaximumFractionDigits:ZERO_DEGIT];
 	return xFormatter;
 }
 
-#define MIN_XAXIS 0.0
-#define MAX_XAXIS 20.0
-#define XAXIS_LENGTH (MAX_XAXIS - MIN_XAXIS)
+#define XAXIS_INTERVAL @"30"
+#define XAXIS_ORTHOGONAL @"0.0"
 
 - (void)createXAxis:(CPXYAxisSet*)axisSet {
 	CPXYAxis *xAxis = axisSet.xAxis;
-	xAxis.majorIntervalLength = CPDecimalFromString(@"1");
-	xAxis.orthogonalCoordinateDecimal = CPDecimalFromString(@"0");
+	xAxis.majorIntervalLength = CPDecimalFromString(XAXIS_INTERVAL);
+	xAxis.orthogonalCoordinateDecimal = CPDecimalFromString(XAXIS_ORTHOGONAL);
 	xAxis.minorTicksPerInterval = 0.0f;
 
-	[xAxis setTitle:@"X Axis"];
+	[xAxis setTitle:@"degree(°)"];
 	[xAxis setVisibleRange:[CPPlotRange plotRangeWithLocation:CPDecimalFromFloat(MIN_XAXIS) length:CPDecimalFromFloat(XAXIS_LENGTH)]];
 
 	[xAxis setLabelTextStyle:[self createTextStyle:@"Georgia" color:[CPColor cyanColor]]];
@@ -80,21 +95,21 @@
 
 - (NSNumberFormatter*)createYFormatter {
 	NSNumberFormatter *yFormatter = [[[NSNumberFormatter alloc] init] autorelease];
-	[yFormatter setMaximumFractionDigits:0];
+	[yFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
+	[yFormatter setMaximumFractionDigits:3];
 	return yFormatter;
 }
 
-#define MIN_YAXIS -10.0
-#define MAX_YAXIS 10.0
-#define YAXIS_LENGTH (MAX_YAXIS - MIN_YAXIS)
+#define YAXIS_INTERVAL @"0.2"
+#define YAXIS_ORTHOGONAL @"0.0"
 
 - (void)createYAxis:(CPXYAxisSet*)axisSet {
 	CPXYAxis *yAxis = axisSet.yAxis;
-	yAxis.majorIntervalLength = CPDecimalFromString(@"1");
+	yAxis.majorIntervalLength = CPDecimalFromString(YAXIS_INTERVAL);
 	yAxis.minorTicksPerInterval = 0;
-	yAxis.orthogonalCoordinateDecimal = CPDecimalFromString(@"0");
+	yAxis.orthogonalCoordinateDecimal = CPDecimalFromString(YAXIS_ORTHOGONAL);
 
-	[yAxis setTitle:@"Y Axis"];
+	[yAxis setTitle:@"sin(x) value"];
 	[yAxis setVisibleRange:[CPPlotRange plotRangeWithLocation:CPDecimalFromFloat(MIN_YAXIS) length:CPDecimalFromFloat(YAXIS_LENGTH)]];
 
 	[yAxis setLabelTextStyle:[self createTextStyle:@"Georgia" color:[CPColor cyanColor]]];
@@ -151,12 +166,13 @@
 }
 
 #define ARRAY_CAPACITY XAXIS_LENGTH
+#define degreeToRadian(x) (M_PI * (x) / 180.0)
 
 - (void)createPlots {
 	NSMutableArray *contents = [NSMutableArray arrayWithCapacity:ARRAY_CAPACITY];
 	for (NSInteger i = MIN_XAXIS; i < MAX_XAXIS; i++) {
-		id x = [NSNumber numberWithFloat:i];
-		id y = [NSNumber numberWithInt:(i % 10)];
+		id x = [NSNumber numberWithDouble:i];
+		id y = [NSNumber numberWithDouble:sin(degreeToRadian(i % 360))];
 		[contents addObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:x, @"x", y, @"y", nil]];
 	}
 	self.plots = contents;
