@@ -10,13 +10,13 @@
 #import <CorePlot/CorePlot-CocoaTouch.h>
 
 
-@interface GraphView : UIView<CPPlotDataSource> {
+@interface GraphView : UIView<CPTPlotDataSource> {
 @private
-	CPXYGraph* graph_;
+	CPTXYGraph* graph_;
 	NSArray* plots_;
 }
 
-@property (nonatomic, retain) CPXYGraph* graph;
+@property (nonatomic, retain) CPTXYGraph* graph;
 @property (nonatomic, retain) NSArray* plots;
 
 @end
